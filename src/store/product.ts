@@ -67,7 +67,10 @@ export const useProductStore = defineStore("product", {
       return resp;
     },
     async getInventoryAvailableByFacility(productId: string) {
-      let productQoh = "";
+      // Default to 0 so a failed or empty lookup is cached by the callers'
+      // productQoh checks; returning "" made every visibility event refire
+      // the request for products with no ProductFacility record.
+      let productQoh = 0;
       const payload = {
         productId,
         facilityId: useFacilityStore().getCurrentFacility.facilityId,
@@ -81,7 +84,7 @@ export const useProductStore = defineStore("product", {
         });
 
         if (!commonUtil.hasError(resp)) {
-          productQoh = resp?.data.qoh;
+          productQoh = resp?.data.qoh ?? 0;
         } else {
           throw resp.data;
         }
